@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "net.blupillcosby.classicpipesnt.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "AbstractContainerMenuMixin",
+    "AbstractContainerMenuAccessor",
+    "PipeNetworkMixin",
+    "StockingPipeBlockMixin",
+    "StockingPipeMenuMixin",
+    "StockingPipeEntityMixin",
+    "client.screen.SmallerCheckboxAccessor",
+    "client.screen.StockingPipeScreenMixin"
+  ]
+}

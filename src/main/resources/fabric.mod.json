@@ -1,0 +1,29 @@
+{
+	"schemaVersion": 1,
+	"id": "classicpipes-networktweaks",
+	"version": "${version}",
+	"name": "Classic Pipes Network Tweaks",
+	"description": "Adds enhancements to the networked stocking pipes.",
+	"authors": [
+		"blupillcosby"
+	],
+	"contact": {},
+	"license": "CC0-1.0",
+	"icon": "icon.png",
+	"environment": "*",
+	"depends": {
+		"fabricloader": ">=0.19.2",
+		"minecraft": "~26.1",
+		"java": ">=25",
+		"fabric-api": "*"
+	},
+	"entrypoints": {
+		"main": [
+			"net.blupillcosby.classicpipesnt.ClassicPipesNetworkTweaks"
+		]
+	},
+	"mixins": [
+		"classicpipesnt.mixins.json",
+		"classicpipesnt.client.mixins.json"
+	]
+}

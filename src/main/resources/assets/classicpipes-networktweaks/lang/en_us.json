@@ -1,0 +1,4 @@
+ {
+  "widget.classicpipesnt.allow_overflow": "Allow overflow",
+  "tooltip.classicpipesnt.allow_overflow": "Treat the filter as infinite and keep requesting items until the attached container is full."
+}
