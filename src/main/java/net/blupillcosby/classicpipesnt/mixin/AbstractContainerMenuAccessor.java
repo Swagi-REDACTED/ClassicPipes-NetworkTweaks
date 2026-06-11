@@ -9,4 +9,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface AbstractContainerMenuAccessor {
     @Invoker("addDataSlot")
     DataSlot classicpipesnt$addDataSlot(DataSlot dataSlot);
+
+    @Invoker("addSlot")
+    net.minecraft.world.inventory.Slot classicpipesnt$addSlot(net.minecraft.world.inventory.Slot slot);
 }

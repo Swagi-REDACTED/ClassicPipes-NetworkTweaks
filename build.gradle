@@ -43,6 +43,9 @@ dependencies {
     implementation "com.terraformersmc:modmenu:${project.modmenu_version}"
     
     implementation("me.fzzyhmstrs:fzzy_config:${project.fzzy_config_version}")
+    
+    // Fix Gson InlineMe compiler warnings
+    compileOnly "com.google.errorprone:error_prone_annotations:2.30.0"
 }
 
 processResources {

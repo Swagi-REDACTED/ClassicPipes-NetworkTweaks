@@ -27,8 +27,27 @@ public abstract class StockingPipeEntityMixin implements IStockingPipeEntity {
     @Unique
     private boolean classicpipesnt$allowOverflow = false;
 
+    @Unique
+    private boolean classicpipesnt$needsBackupRestore = false;
+
+    @org.spongepowered.asm.mixin.injection.ModifyArg(
+            method = "<init>",
+            at = @At(value = "INVOKE", target = "Ljagm/classicpipes/inventory/container/FilterContainer;<init>(Ljagm/classicpipes/blockentity/PipeEntity;IZ)V"),
+            index = 1
+    )
+    private static int classicpipesnt$increaseServerFilterSize(int size) {
+        return size * 99;
+    }
+
     @Inject(method = "tickServer", at = @At("HEAD"))
     private void classicpipesnt$onTickServer(ServerLevel level, BlockPos pos, BlockState state, CallbackInfo ci) {
+        if (this.classicpipesnt$needsBackupRestore) {
+            StockingPipeEntity entity = (StockingPipeEntity)(Object)this;
+            net.blupillcosby.classicpipesnt.util.FilterBackupManager.restoreBackup(level, pos, entity.getFilter());
+            this.classicpipesnt$needsBackupRestore = false;
+            entity.setChanged();
+        }
+
         if (this.classicpipesnt$allowOverflow && level.getGameTime() % 20 == 0) {
             StockingPipeEntity entity = (StockingPipeEntity)(Object)this;
             entity.updateCache(level);
@@ -38,11 +57,50 @@ public abstract class StockingPipeEntityMixin implements IStockingPipeEntity {
     @Inject(method = "loadAdditional", at = @At("TAIL"))
     private void classicpipesnt$loadAdditional(ValueInput valueInput, CallbackInfo ci) {
         this.classicpipesnt$allowOverflow = valueInput.getBooleanOr("classicpipesnt_allow_overflow", false);
+        
+        StockingPipeEntity entity = (StockingPipeEntity)(Object)this;
+        jagm.classicpipes.inventory.container.Filter filter = entity.getFilter();
+        
+        boolean hasExtra = false;
+        var extraList = valueInput.listOrEmpty("classicpipesnt_filter_extra", net.blupillcosby.classicpipesnt.util.CustomCodecs.INT_SLOT_CODEC);
+        for (net.minecraft.world.ItemStackWithSlot slotStack : extraList) {
+            hasExtra = true;
+            if (slotStack.slot() >= 9) {
+                filter.setItem(slotStack.slot(), slotStack.stack());
+            }
+        }
+        
+        if (!hasExtra) {
+            this.classicpipesnt$needsBackupRestore = true;
+        }
+    }
+
+    @org.spongepowered.asm.mixin.injection.Redirect(
+            method = "saveAdditional",
+            at = @At(value = "INVOKE", target = "Ljagm/classicpipes/inventory/container/Filter;getContainerSize()I")
+    )
+    private int classicpipesnt$limitBaseFilterSaveSize(jagm.classicpipes.inventory.container.Filter filter) {
+        return 9; // Base mod only expects 9. This ensures backwards compatibility!
     }
 
     @Inject(method = "saveAdditional", at = @At("TAIL"))
     private void classicpipesnt$saveAdditional(ValueOutput valueOutput, CallbackInfo ci) {
         valueOutput.putBoolean("classicpipesnt_allow_overflow", this.classicpipesnt$allowOverflow);
+        
+        StockingPipeEntity entity = (StockingPipeEntity)(Object)this;
+        jagm.classicpipes.inventory.container.Filter filter = entity.getFilter();
+        
+        var extraList = valueOutput.list("classicpipesnt_filter_extra", net.blupillcosby.classicpipesnt.util.CustomCodecs.INT_SLOT_CODEC);
+        for (int slot = 9; slot < filter.getContainerSize(); slot++) {
+            ItemStack stack = filter.getItem(slot);
+            if (!stack.isEmpty()) {
+                extraList.add(new net.minecraft.world.ItemStackWithSlot(slot, stack));
+            }
+        }
+        
+        if (!this.classicpipesnt$needsBackupRestore) {
+            net.blupillcosby.classicpipesnt.util.FilterBackupManager.saveBackupAsync(entity.getLevel(), entity.getBlockPos(), filter);
+        }
     }
 
     @Inject(method = "updateCache", at = @At("RETURN"))
@@ -73,7 +131,18 @@ public abstract class StockingPipeEntityMixin implements IStockingPipeEntity {
             if (storage != null) {
                 try (net.fabricmc.fabric.api.transfer.v1.transaction.Transaction transaction = net.fabricmc.fabric.api.transfer.v1.transaction.Transaction.openOuter()) {
                     for (ItemStack filterStack : filterItems) {
-                        long inserted = storage.insert(net.fabricmc.fabric.api.transfer.v1.item.ItemVariant.of(filterStack), Long.MAX_VALUE, transaction);
+                        long inserted = 0;
+                        if (filterStack.getItem() instanceof LabelItem labelItem) {
+                            for (net.fabricmc.fabric.api.transfer.v1.storage.StorageView<net.fabricmc.fabric.api.transfer.v1.item.ItemVariant> view : storage) {
+                                if (view.isResourceBlank()) {
+                                    inserted += view.getCapacity();
+                                } else if (labelItem.itemMatches(filterStack, view.getResource().toStack())) {
+                                    inserted += (view.getCapacity() - view.getAmount());
+                                }
+                            }
+                        } else {
+                            inserted = storage.insert(net.fabricmc.fabric.api.transfer.v1.item.ItemVariant.of(filterStack), Long.MAX_VALUE, transaction);
+                        }
                         if (inserted > 0) {
                             entity.getMissingItemsCache().add(filterStack.copyWithCount((int) Math.min(Integer.MAX_VALUE, inserted)));
                         }

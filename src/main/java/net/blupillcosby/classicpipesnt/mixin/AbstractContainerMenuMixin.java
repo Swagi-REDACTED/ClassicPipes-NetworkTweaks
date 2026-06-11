@@ -16,7 +16,7 @@ public abstract class AbstractContainerMenuMixin {
     )
     private int classicpipesnt$shiftExtendedTop(int top) {
         if ((Object)this instanceof StockingPipeMenu) {
-            return top + 18;
+            return top + 38;
         }
         return top;
     }
@@ -28,7 +28,7 @@ public abstract class AbstractContainerMenuMixin {
     )
     private int classicpipesnt$shiftHotbarTop(int top) {
         if ((Object)this instanceof StockingPipeMenu) {
-            return top + 18;
+            return top + 38;
         }
         return top;
     }

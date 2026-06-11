@@ -9,7 +9,12 @@
     "StockingPipeBlockMixin",
     "StockingPipeMenuMixin",
     "StockingPipeEntityMixin",
+    "TagLoaderMixin",
     "client.screen.SmallerCheckboxAccessor",
-    "client.screen.StockingPipeScreenMixin"
+    "client.screen.AbstractContainerScreenAccessor",
+    "FilterMenuMixin",
+    "accessor.SlotAccessor",
+    "client.screen.StockingPipeScreenMixin",
+    "NBTFilterCodecMixin"
   ]
 }

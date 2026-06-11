@@ -15,6 +15,9 @@ public class ClassicPipesNetworkTweaks implements ModInitializer {
         PayloadTypeRegistry.serverboundPlay().register(ServerBoundAllowOverstockingPayload.TYPE, ServerBoundAllowOverstockingPayload.STREAM_CODEC);
         ServerPlayNetworking.registerGlobalReceiver(ServerBoundAllowOverstockingPayload.TYPE, ServerBoundAllowOverstockingPayload::handle);
 
+        PayloadTypeRegistry.serverboundPlay().register(net.blupillcosby.classicpipesnt.network.ServerBoundPasteFilterPayload.TYPE, net.blupillcosby.classicpipesnt.network.ServerBoundPasteFilterPayload.STREAM_CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(net.blupillcosby.classicpipesnt.network.ServerBoundPasteFilterPayload.TYPE, net.blupillcosby.classicpipesnt.network.ServerBoundPasteFilterPayload::handle);
+
         PayloadTypeRegistry.clientboundPlay().register(ClientBoundAllowOverstockingPayload.TYPE, ClientBoundAllowOverstockingPayload.STREAM_CODEC);
         ClientPlayNetworking.registerGlobalReceiver(ClientBoundAllowOverstockingPayload.TYPE, (payload, context) -> {
             net.blupillcosby.classicpipesnt.ClientState.lastAllowOverstocking = payload.allowOverstocking();
